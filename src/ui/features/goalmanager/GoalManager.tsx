@@ -19,7 +19,7 @@ import { useAppDispatch, useAppSelector } from '../../../store/hooks'
 import DatePicker from '../../components/DatePicker'
 import { Theme } from '../../components/Theme'
 import EmojiPicker from '../../components/EmojiPicker'
-import {TransparentButton} from '../../components/TransparentButton'
+import { TransparentButton } from '../../components/TransparentButton'
 import GoalIcon from './GoalIcon'
 import { BaseEmoji } from 'emoji-mart'
 
@@ -58,7 +58,6 @@ export function GoalManager(props: Props) {
   const [name, setName] = useState<string | null>(null)
   const [targetDate, setTargetDate] = useState<Date | null>(null)
   const [targetAmount, setTargetAmount] = useState<number | null>(null)
-
   const [icon, setIcon] = useState<string | null>(null)
   const [emojiPickerIsOpen, setEmojiPickerIsOpen] = useState(false)
 
@@ -86,24 +85,27 @@ export function GoalManager(props: Props) {
     setEmojiPickerIsOpen(true)
   }
 
-  const pickEmojiOnClick = (emoji: BaseEmoji, event: React.MouseEvent) => {
-    event.stopPropagation()
+  // ✅ FIXED TYPE ISSUE HERE
+  const pickEmojiOnClick =
+    () =>
+    (emoji: BaseEmoji, event: React.MouseEvent<Element, MouseEvent>) => {
+      event.stopPropagation()
 
-    const newIcon = emoji.native
-    setIcon(newIcon)
-    setEmojiPickerIsOpen(false)
+      const newIcon = emoji.native
+      setIcon(newIcon)
+      setEmojiPickerIsOpen(false)
 
-    const updatedGoal: Goal = {
-      ...props.goal,
-      icon: newIcon,
-      name: name ?? props.goal.name,
-      targetDate: targetDate ?? props.goal.targetDate,
-      targetAmount: targetAmount ?? props.goal.targetAmount
+      const updatedGoal: Goal = {
+        ...props.goal,
+        icon: newIcon,
+        name: name ?? props.goal.name,
+        targetDate: targetDate ?? props.goal.targetDate,
+        targetAmount: targetAmount ?? props.goal.targetAmount
+      }
+
+      dispatch(updateGoalRedux(updatedGoal))
+      updateGoalApi(props.goal.id, updatedGoal)
     }
-
-    dispatch(updateGoalRedux(updatedGoal))
-    updateGoalApi(props.goal.id, updatedGoal)
-  }
 
   const updateNameOnChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const nextName = event.target.value
@@ -158,7 +160,6 @@ export function GoalManager(props: Props) {
     <GoalManagerContainer>
       <NameInput value={name ?? ''} onChange={updateNameOnChange} />
 
-      {/* ADD ICON BUTTON (ONLY WHEN NO ICON) */}
       <AddIconButtonContainer hasIcon={hasIcon()}>
         <TransparentButton onClick={addIconOnClick}>
           <FontAwesomeIcon icon={faSmile} size="2x" />
@@ -166,18 +167,16 @@ export function GoalManager(props: Props) {
         </TransparentButton>
       </AddIconButtonContainer>
 
-      {/* ICON (ONLY WHEN EXISTS) */}
       <GoalIconContainer shouldShow={hasIcon()}>
         <GoalIcon icon={icon} onClick={addIconOnClick} />
       </GoalIconContainer>
 
-      {/* EMOJI PICKER */}
       <EmojiPickerContainer
         isOpen={emojiPickerIsOpen}
         hasIcon={hasIcon()}
         onClick={(e) => e.stopPropagation()}
       >
-        <EmojiPicker onClick={pickEmojiOnClick} />
+        <EmojiPicker onClick={pickEmojiOnClick()} />
       </EmojiPickerContainer>
 
       <Group>
